@@ -1,4 +1,6 @@
-﻿using Microsoft.ML.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.ML.Data;
 
 namespace godot_net_server
 {
@@ -15,5 +17,28 @@ namespace godot_net_server
         // Column name for input
         [ColumnName("conv2d_1_input")]
         public float[] Input { get; set; }
+    }
+
+    public static class StringModelInputExt
+    {
+        public static IEnumerable<float> ToIEnumerableFloat(this string dumpedImage)
+        {
+            return dumpedImage
+                .Split("\n")
+                .Select(x=>x
+                    .Split(",")
+                    .Select(x=>x
+                        .Replace('[',' ')
+                        .Replace(']',' ')
+                        .Replace(';', ' ')
+                        .Trim()
+                    )
+                )
+                .Select(x=> x
+                    .Select(x=>float.Parse(x)/255
+                    )
+                )
+                .SelectMany(x=>x);
+        }
     }
 }

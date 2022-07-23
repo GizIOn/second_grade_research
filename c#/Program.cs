@@ -1,6 +1,10 @@
 ﻿using Microsoft.ML;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using OpenCvSharp;
+using Mat = OpenCvSharp.Mat;
+using OutputArray = OpenCvSharp.OutputArray;
 
 namespace godot_net_server
 {
@@ -8,13 +12,21 @@ namespace godot_net_server
     {
         public static void Main(string[] args)
         {
-            const string pathToModel = @"C:\Users\Gizon\Desktop\courseResearch\pythonProject37\cnn.h5.onnx";
-
+            const string pathToModel = @"C:\Users\Gizon\Desktop\Study\moais\secondCourse\courseReasearch\pythonProject37\cnn.h5.onnx";
+            const string pathToPng = @"C:\Users\Gizon\Desktop\Study\moais\secondCourse\courseReasearch\1.jpg";
+            
             var mlContext = new MLContext();
 
             // Load trained model
             var modelScorer = new OnnxModelScorer(pathToModel, mlContext);
 
+            var floats = GetImageFromPath(pathToPng);
+            var modelInput = new List<ModelInput> {new() {Input = floats.ToArray()}};
+            var prediction= GetPrediction(mlContext, modelInput, modelScorer);
+
+            ConsoleWriteResult(prediction);
+
+            /*
             var pyInput = new List<ModelInput>()
             {
                 new ModelInput
@@ -815,7 +827,36 @@ namespace godot_net_server
             {
                 Console.Write($"{f}\n");
             }
+            Console.Write("]");*/
+        }
+
+        private static void ConsoleWriteResult(IEnumerable<float>? prediction)
+        {
+            Console.WriteLine("[");
+            foreach (var f in prediction)
+            {
+                Console.Write($"{f}\n");
+            }
+
             Console.Write("]");
+        }
+
+        private static IEnumerable<float> GetPrediction(MLContext? mlContext, IEnumerable<ModelInput> modelInput, OnnxModelScorer? modelScorer)
+        {
+            var dataView = mlContext.Data.LoadFromEnumerable(modelInput);
+            // Get prediction
+            var prediction = modelScorer.Score(dataView);
+
+            return prediction;
+        }
+
+        private static IEnumerable<float> GetImageFromPath(string pathToPng)
+        {
+            var image = Cv2.ImRead(pathToPng, ImreadModes.Grayscale);
+            var smaller = new Mat();
+            Cv2.Resize(image, smaller, new Size(28, 28));
+            var floats = smaller.Dump().ToIEnumerableFloat();
+            return floats;
         }
     }
 }
