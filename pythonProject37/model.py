@@ -6,6 +6,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras.utils import np_utils
+import image
 
 np.random.seed(1337)  # for reproducibility
 
@@ -100,6 +101,22 @@ score = model.evaluate(X_test, Y_test,verbose=0)
 
 print("====================================================")
 print(model.predict(first, 128, 1))
+
+
+def get_image_from_memory(modelDir="", testImage=""):
+    from keras.preprocessing.image import img_to_array, load_img
+    # чтение изображения в массив
+    image = load_img(modelDir + testImage, color_mode="grayscale")
+    image = img_to_array(image)
+    image /= 255
+    image = image.reshape(1, img_rows, img_cols, 1)
+    image = image.astype('float32')
+    return image
+
+
+print("====================================================")
+image1 = get_image_from_memory("C:\\Users\\Gizon\\Desktop\\Study\\moais\\secondCourse\\courseReasearch\\","1.jpg")
+print(model.predict(image1))
 print("====================================================")
 #print(model.predict(first_ten_Y, 128, 1))
 # try zone
@@ -109,10 +126,6 @@ print("====================================================")
 #img.shape
 #print(model.predict(np.array(img)))
 # generate png 32x32 with a number
-# TODO: 1) try to get prediction for a real image 28x28 -- взять из тестовой базы
-# TODO: 2) convert from python through onnx to c# -- important
-#
-# TODO: 3) using ML.NET(preferably) use the model and repeat 1) here
 
 # text: task, what wanted to do, why needed (c# for back, py for ml) -- intro
 # what onnx is, how correlates to py, description with code examples maybe
